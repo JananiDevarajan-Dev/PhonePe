@@ -56,7 +56,8 @@ PhonePe/
 │   └── DataVisualisation.py
 ├── Phonepe_Insights_Recommendation.pdf  # Documentation
 ├── README.md
-└── PhonePay_SqlQuerie.sql             # MySQL schema and sample queries________________________________________
+└── PhonePay_SqlQuerie.sql             # MySQL schema and sample queries
+________________________________________
 Installation
 1.	Clone the repository:
 •	git clone https://github.com/JananiDevarajan-Dev/PhonePe
