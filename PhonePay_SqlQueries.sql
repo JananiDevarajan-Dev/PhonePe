@@ -1,6 +1,7 @@
 use phonepe;
 select distinct quater from agg_transaction ;
 select distinct year from agg_transaction;
+select distinct year from top_insurance where year between 2020 and 2024;
 select sum(transacion_amount)as Transacion_amount,state,year,quater from agg_transaction where year='2024' and quater='2' group by state order by Transacion_amount desc;
 select sum(RegisteredUsers) as RegisteredUsers,state,year,quater from agg_user where year = '2024' and quater='2' group by state order by RegisteredUsers desc;
 select sum(Transacion_amount) as Transaction_amount,sum(Transacion_count) as Transaction_Count,State,Year from agg_transaction group by state,Year  order by Transaction_amount,Transaction_count desc;

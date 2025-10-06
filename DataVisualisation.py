@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine,text
 import urllib.parse
 import plotly.express as px
-from plotly.subplots import make_subplots
+
 
 # Database connection details
 username = "root"          # your MySQL username
@@ -47,6 +47,9 @@ transaction_year = pd.read_sql(transaction_y, engine)
 
 transaction_s="""select distinct state from agg_transaction;"""
 transaction_state = pd.read_sql(transaction_s, engine)
+
+insurance_y = """select distinct year from top_insurance where year between 2020 and 2024;"""
+insurance_year = pd.read_sql(insurance_y, engine)
 
 # Queries End
 
@@ -234,7 +237,7 @@ if r =="Business Case Study" :
         col1,col2=st.columns(2)
         user_state=col1.selectbox("Select the State",transaction_state)
         st.subheader("Users Count in " +user_state)
-        user_query_state=""" select sum(RegisteredUsers) as RegisteredUsers,state,quater as Quarter from agg_user where state="maharashtra" group by state,Quarter order by RegisteredUsers desc;"""
+        user_query_state=""" select sum(RegisteredUsers) as RegisteredUsers,state,quater as Quarter from agg_user where state= :state group by state,Quarter order by RegisteredUsers desc;"""
         user_query_state_values = pd.read_sql_query(sql=text(user_query_state),con=engine,params={"state": user_state})
         #print(query_quarter_map)
         fig = px.line(
@@ -357,8 +360,8 @@ if r =="Business Case Study" :
         )
         st.plotly_chart(fig)
 
-        st.header("Top States by Transaction Count as per State")
-        state_count_query=""" select state,sum(Transacion_count) as Transaction_Count FROM top_transaction group by state order by Transaction_Count desc ;"""
+        st.header("Top 10 States by Transaction Count as per State")
+        state_count_query=""" select state,sum(Transacion_count) as Transaction_Count FROM top_transaction group by state order by Transaction_Count desc limit 10 ;"""
         state_count_query_values = pd.read_sql_query(sql=text(state_count_query),con=engine)
         # --- Create horizontal bar chart ---
         fig = px.bar(
@@ -366,7 +369,7 @@ if r =="Business Case Study" :
             x="Transaction_Count",
             y="state",
             orientation="h",
-            title="Total Transactions Count by State",
+            title="Total 10 Transactions Count by State",
             text="Transaction_Count",
             color="Transaction_Count",
             color_continuous_scale="Blues"
@@ -413,14 +416,14 @@ if r =="Business Case Study" :
         st.plotly_chart(fig)
 
 
-        st.header("Least 10 States based on Transaction Amount")
+        st.header("Bottom 10 States based on Transaction Amount")
         least_states="""select state,sum(Transacion_amount) as Transaction_Amount FROM top_transaction group by state order by transaction_amount asc limit 10;"""
         least_states_query=pd.read_sql_query(least_states, engine)
         fig = px.bar(
         least_states_query, 
         x='state', 
         y='Transaction_Amount',
-        title='Least 10 States by Transaction_Amount',
+        title='Bottom 10 States by Transaction_Amount',
         text='Transaction_Amount',
         color='Transaction_Amount'  # Adds color differentiation
         )
@@ -428,14 +431,14 @@ if r =="Business Case Study" :
         fig.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig)
         
-        st.header("Least 10 Districts based on Transaction Amount")
+        st.header("Bottom 10 Districts based on Transaction Amount")
         least_district="""select District_Name ,sum(Transacion_amount) as Transaction_Amount FROM top_transaction where District_Name is not null AND District_Name != 'none' group by District_Name order by transaction_amount asc limit 10;"""
         least_district_query=pd.read_sql_query(least_district, engine)
         fig = px.bar(
         least_district_query, 
         x='District_Name', 
         y='Transaction_Amount',
-        title='Least 10 Districts by Transaction_Amount',
+        title='Bottom 10 Districts by Transaction_Amount',
         text='Transaction_Amount',
         color='Transaction_Amount'  # Adds color differentiation
         )
@@ -513,14 +516,14 @@ if r =="Business Case Study" :
         )
         st.plotly_chart(fig)
 
-        st.header("Least 10 States based on Registered Users")
+        st.header("Bottom 10 States based on Registered Users")
         least_states_user="""select state,sum(RegisteredUsers) as RegisteredUsers FROM top_user group by state order by RegisteredUsers asc limit 10;"""
         least_states_query_user=pd.read_sql_query(least_states_user, engine)
         fig = px.bar(
         least_states_query_user, 
         x='state', 
         y='RegisteredUsers',
-        title='Least 10 States by RegisteredUsers',
+        title='Bottom 10 States by RegisteredUsers',
         text='RegisteredUsers',
         color='RegisteredUsers'  # Adds color differentiation
         )
@@ -528,14 +531,14 @@ if r =="Business Case Study" :
         fig.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig)
 
-        st.header("Least 10 Districts based on Registered Users")
+        st.header("Bottom 10 Districts based on Registered Users")
         least_district_user="""select District_Name ,sum(RegisteredUsers) as RegisteredUsers FROM top_user where District_Name is not null AND District_Name != 'none' group by District_Name order by RegisteredUsers asc limit 10;"""
         least_district_query_user=pd.read_sql_query(least_district_user, engine)
         fig = px.bar(
         least_district_query_user, 
         x='District_Name', 
         y='RegisteredUsers',
-        title='Least 10 Districts by Registered Users',
+        title='Bottom 10 Districts by Registered Users',
         text='RegisteredUsers',
         color='RegisteredUsers'  # Adds color differentiation
         )
@@ -612,7 +615,7 @@ if r =="Business Case Study" :
         st.plotly_chart(fig)
 
         st.header("Top States by Insurance Transaction Count as per State")
-        state_count_query_insurance="""select state,sum(Transacion_count) as Transaction_Count FROM top_insurance group by state order by Transaction_Count desc ;"""
+        state_count_query_insurance="""select state,sum(Transacion_count) as Transaction_Count FROM top_insurance group by state order by Transaction_Count desc limit 10 ;"""
         state_count_query_values_insurance = pd.read_sql_query(sql=text(state_count_query_insurance),con=engine)
         # --- Create horizontal bar chart ---
         fig = px.bar(
@@ -640,9 +643,9 @@ if r =="Business Case Study" :
 
         st.header("Top States by Insurance Transaction Amount and Insurance Transaction Count per Year")
         col1,col2=st.columns(2)
-        select_year_insurance=col1.selectbox("Select Year for Insurance Transaction Analysis : ",transaction_year)
+        select_year_insurance=col1.selectbox("Select Year for Insurance Transaction Analysis : ",insurance_year)
         st.subheader("Selected  year is : " +select_year_insurance)
-        select_year_insurance_query=""" select sum(Transacion_count) as Transaction_Count,sum(Transacion_amount) as Transaction_Amount ,state from top_insurance where year= :year group by state order by Transaction_Amount desc ,Transaction_Count desc;"""
+        select_year_insurance_query="""select sum(Transacion_count) as Transaction_Count,sum(Transacion_amount) as Transaction_Amount ,state from top_insurance where year= :year group by state order by Transaction_Amount desc ,Transaction_Count desc;"""
         select_year_insurance_query_values = pd.read_sql_query(sql=text(select_year_insurance_query),con=engine,params={"year": select_year_insurance})
        # Melt the dataframe to long format for px.bar
         df_long = select_year_insurance_query_values.melt(
@@ -669,14 +672,14 @@ if r =="Business Case Study" :
         st.plotly_chart(fig)
 
 
-        st.header("Least 10 States based on Insurance Transaction Amount")
+        st.header("Bottom 10 States based on Insurance Transaction Amount")
         least_states_insurance="""select state,sum(Transacion_amount) as Transaction_Amount FROM top_insurance group by state order by transaction_amount asc limit 10;"""
         least_states_query_insurance=pd.read_sql_query(least_states_insurance, engine)
         fig = px.bar(
         least_states_query_insurance, 
         x='state', 
         y='Transaction_Amount',
-        title='Least 10 States by Transaction_Amount',
+        title='Bottom 10 States by Transaction_Amount',
         text='Transaction_Amount',
         color='Transaction_Amount'  # Adds color differentiation
         )
@@ -684,14 +687,14 @@ if r =="Business Case Study" :
         fig.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig)
 
-        st.header("Least 10 Districts based on Insurance Transaction Amount")
+        st.header("Bottom 10 Districts based on Insurance Transaction Amount")
         least_district_insurance="""select District_Name ,sum(Transacion_amount) as Transaction_Amount FROM top_insurance where District_Name is not null AND District_Name != 'none' group by District_Name order by transaction_amount asc limit 10;"""
         least_district_query_insurance=pd.read_sql_query(least_district_insurance, engine)
         fig = px.bar(
         least_district_query_insurance, 
         x='District_Name', 
         y='Transaction_Amount',
-        title='Least 10 Districts by Transaction_Amount',
+        title='Bottom 10 Districts by Transaction_Amount',
         text='Transaction_Amount',
         color='Transaction_Amount'  # Adds color differentiation
         )
